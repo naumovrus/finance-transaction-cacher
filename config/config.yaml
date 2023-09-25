@@ -1,0 +1,11 @@
+database_config: 
+    username: "postgres"
+    host: "localhost"
+    port_db: "5436"
+    dbname: "postgres"
+    sslmode: "disable"
+
+http_server:
+    port_serv: "8000"
+     
+
