@@ -54,3 +54,4 @@ func getUserId(c *gin.Context) (int, error) {
 	}
 	return idInt, nil
 }
+

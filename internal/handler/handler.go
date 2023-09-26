@@ -2,15 +2,20 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/naumovrus/finance-transaction-api/internal/cache"
 	"github.com/naumovrus/finance-transaction-api/internal/service"
 )
 
 type Handler struct {
-	services *service.Service
+	services   *service.Service
+	redisCache cache.TransactionCache
 }
 
-func NewHandler(services *service.Service) *Handler {
-	return &Handler{services: services}
+func NewHandler(services *service.Service, redisCache cache.TransactionCache) *Handler {
+	return &Handler{
+		services:   services,
+		redisCache: redisCache,
+	}
 }
 
 func (h *Handler) InitRoutes() *gin.Engine {

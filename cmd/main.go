@@ -6,6 +6,7 @@ import (
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/joho/godotenv"
+	"github.com/naumovrus/finance-transaction-api/internal/cache"
 	"github.com/naumovrus/finance-transaction-api/internal/config"
 	"github.com/naumovrus/finance-transaction-api/internal/handler"
 	"github.com/naumovrus/finance-transaction-api/internal/httpserver"
@@ -37,10 +38,16 @@ func main() {
 		logrus.Fatalf("unable to intitialize db: %s", err.Error())
 	}
 
-	// redis := repository.NewRedis()
 	repos := repository.NewRepository(db)
 	service := service.NewService(repos)
-	handlers := handler.NewHandler(service)
+
+	redisCache := cache.NewRedisCache("redis:6379", 1, 1000, service)
+	err = redisCache.SetCachedData()
+	if err != nil {
+		log.Fatalf("error occured while get data from redis: %s", err)
+	}
+
+	handlers := handler.NewHandler(service, redisCache)
 	srv := new(httpserver.Server)
 
 	if err := srv.Run("8080", handlers.InitRoutes()); err != nil {

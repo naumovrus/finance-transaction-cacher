@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  finance-transaction-api:
+    build: ./
+    command: ./wait-for-postgres.sh db ./finance-transaction-api redis ./finance-transaction-api 
+    ports:
+      - 8080:8080
+    depends_on:
+      - db 
+    environment:
+      - DB_PASSWORD=qwerty
+  db:
+    restart: always 
+    image: postgres:latest
+    volumes:
+      - ./.database/postgres/data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=qwerty
+    ports:
+      - 5432:5432
+  redis:
+    restart: always
+    image: redis/redis-stack:latest
+    command: redis-server --save 20 1 --protected-mode no
+    volumes:
+      - redis:/data/redis
+    ports:
+      - 6379:6379
+volumes:
+  redis:
+    driver: local
+  db:

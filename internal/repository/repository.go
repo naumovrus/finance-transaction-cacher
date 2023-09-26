@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"time"
+
 	"github.com/jmoiron/sqlx"
 	ent "github.com/naumovrus/finance-transaction-api/internal/entity"
 )
@@ -14,9 +16,12 @@ type User interface {
 // update
 type Money interface {
 	CreateWallet(userId int) (int, error)
-	TopUp(userId int, amount float64) error
-	TakeOut(userId int, amount float64) error
-	Send(userIdFrom, userIdTo int, amount float64) error
+	TopUp(userId int, amount float64) (int, error)
+	TakeOut(userId int, amount float64) (int, error)
+	Send(userIdFrom, userIdTo int, amount float64) (int, error)
+	GetLastTransactionSend() (int, error)
+	GetLastTransactionTUTO() (int, error)
+	SetCachedDataSendPostgres(userIdFrom, userIdTo int, time time.Time) (int, error)
 }
 
 type Repository struct {

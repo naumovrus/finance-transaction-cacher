@@ -14,3 +14,17 @@ CREATE TABLE money_users
     user_id int references users (id) on delete cascade not null
 );
 
+CREATE TABLE transactionsSend
+(
+    id            serial       not null unique,
+    user_id_from int references users (id) on delete cascade not null,
+    user_id_to int references users (id) on delete cascade not null,
+    date_time TIMESTAMP not null 
+);
+
+CREATE TABLE transactionsBalance
+(
+    id            serial       not null unique,
+    user_id int references users (id) on delete cascade not null,
+    date_time TIMESTAMP not null 
+);
