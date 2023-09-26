@@ -101,8 +101,6 @@ func (h *Handler) send(c *gin.Context) {
 		return
 	}
 
-	// jstream := `{"user_id_to": "1", "amount": "12.00"}`
-
 	var input sendMoneyRequest
 
 	if err := c.BindJSON(&input); err != nil {
@@ -142,7 +140,7 @@ func (h *Handler) send(c *gin.Context) {
 	cache.Time = time.Now()
 	h.redisCache.SetTS(cache.Time.String(), cache)
 	var id int
-	// id, err = h.services.Money.Send(userIdFrom, userIdTo, amount)
+	id, err = h.services.Money.Send(userIdFrom, userIdTo, amount)
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
