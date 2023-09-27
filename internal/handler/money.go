@@ -8,6 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/naumovrus/finance-transaction-api/internal/entity"
+	"github.com/naumovrus/finance-transaction-api/internal/pkg/generateid"
 	"github.com/sirupsen/logrus"
 )
 
@@ -101,18 +102,16 @@ func (h *Handler) send(c *gin.Context) {
 		return
 	}
 
+	//Generate UUID:
+
+	uuid := generateid.GenerateUUID()
+	log.Printf("generated uuid: %s", uuid)
 	var input sendMoneyRequest
 
 	if err := c.BindJSON(&input); err != nil {
 		newErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
-
-	// err = json.NewDecoder(strings.NewReader(jstream)).Decode(&input)
-	// if err != nil {
-	// 	newErrorResponse(c, http.StatusInternalServerError, err.Error())
-	// 	return
-	// }
 
 	amountstr := input.Amount
 
@@ -122,25 +121,25 @@ func (h *Handler) send(c *gin.Context) {
 		return
 	}
 
-	var lastId int
-	lastId, err = h.services.Money.GetLastTransactionSend()
-	log.Printf("last_id: %v", lastId)
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err.Error())
 	}
 	var cache entity.TransactionSend
-	cache.Id = lastId + 1
 	cache.UserIdFrom = userIdFrom
+	cache.Amount = amount
+	currentTime := time.Now()
 	userIdTo, err := strconv.Atoi(input.UserIdTo)
 	if err != nil {
 		newErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
 	cache.UserIdTo = userIdTo
-	cache.Time = time.Now()
-	h.redisCache.SetTS(cache.Time.String(), cache)
-	var id int
-	id, err = h.services.Money.Send(userIdFrom, userIdTo, amount)
+	cache.Time = currentTime
+	cache.Uuid = uuid
+	h.redisCache.SetTS(uuid, cache)
+
+	time.Sleep(5 * time.Second)
+	err = h.services.Money.Send(uuid, userIdFrom, userIdTo, amount, currentTime)
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
@@ -148,6 +147,6 @@ func (h *Handler) send(c *gin.Context) {
 
 	logrus.Printf("amount send: %v, user_id_from: %v, user_id_to: %v", amount, userIdFrom, userIdTo)
 	c.JSON(http.StatusOK, map[string]interface{}{
-		"transaction_id": id,
+		"transaction_id": uuid,
 	})
 }

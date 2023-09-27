@@ -16,9 +16,10 @@ CREATE TABLE money_users
 
 CREATE TABLE transactionsSend
 (
-    id            serial       not null unique,
+    uuid            VARCHAR(255)       not null unique,
     user_id_from int references users (id) on delete cascade not null,
     user_id_to int references users (id) on delete cascade not null,
+    amount DECIMAL not null,
     date_time TIMESTAMP not null 
 );
 

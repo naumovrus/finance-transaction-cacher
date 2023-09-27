@@ -41,7 +41,7 @@ func main() {
 	repos := repository.NewRepository(db)
 	service := service.NewService(repos)
 
-	redisCache := cache.NewRedisCache("redis:6379", 1, 1000, service)
+	redisCache := cache.NewRedisCache("redis:6379", 1, 1000, service) //
 	err = redisCache.SetCachedData()
 	if err != nil {
 		log.Fatalf("error occured while get data from redis: %s", err)

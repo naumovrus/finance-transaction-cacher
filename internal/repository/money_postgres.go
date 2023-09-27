@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"database/sql"
 	"errors"
 	"fmt"
 	"time"
@@ -97,10 +98,10 @@ func (r *MoneyPostgres) TakeOut(userId int, amount float64) (int, error) {
 	return id, tx.Commit()
 }
 
-func (r *MoneyPostgres) Send(userIdFrom, userIdTo int, amount float64) (int, error) {
+func (r *MoneyPostgres) Send(uuid string, userIdFrom, userIdTo int, amount float64, time time.Time) error {
 	tx, err := r.db.Begin()
 	if err != nil {
-		return 0, err
+		return err
 	}
 
 	// var id int
@@ -111,19 +112,20 @@ func (r *MoneyPostgres) Send(userIdFrom, userIdTo int, amount float64) (int, err
 	err = r.db.Get(&amCheck, queryCheck, userIdFrom)
 	if err != nil {
 		tx.Rollback()
-		return 0, err
+		return err
 	}
 	if amCheck < amount {
 		tx.Rollback()
-		return 0, errors.New("can't afford")
+		return errors.New("can't afford")
 	}
+
 	queryUserFrom := fmt.Sprintf(`UPDATE %s mt SET amount=amount-$1 WHERE mt.user_id = $2`, moneyTable)
 
 	_, err = tx.Exec(queryUserFrom, amount, userIdFrom)
 
 	if err != nil {
 		tx.Rollback()
-		return 0, err
+		return err
 	}
 
 	queryUserTo := fmt.Sprintf(`UPDATE %s mt SET amount=amount+$1 WHERE mt.user_id=$2`, moneyTable)
@@ -131,33 +133,30 @@ func (r *MoneyPostgres) Send(userIdFrom, userIdTo int, amount float64) (int, err
 	_, err = tx.Exec(queryUserTo, amount, userIdTo)
 	if err != nil {
 		tx.Rollback()
-		return 0, err
+		return err
 	}
 	// var data ent.TransactionSend
-	var id int
-	queryCreateTr := fmt.Sprintf(`INSERT INTO %s (user_id_from, user_id_to, date_time) VALUES ($1, $2, $3) RETURNING id`, transactionSendTable)
-	row := r.db.QueryRow(queryCreateTr, userIdFrom, userIdTo, time.Now())
-	if err := row.Scan(&id); err != nil {
-		tx.Rollback()
-		return 0, err
-	}
+
+	queryCreateTr := fmt.Sprintf(`INSERT INTO %s (uuid, user_id_from, user_id_to, amount, date_time) VALUES ($1, $2, $3, $4, $5)`, transactionSendTable)
+	r.db.QueryRow(queryCreateTr, uuid, userIdFrom, userIdTo, amount, time)
 	tx.Commit()
-	// queryData := fmt.Sprintf("SELECT id, user_id_from, user_id_to, date_time from %s WHERE id = $1", transactionSendTable)
-	// err = r.db.Get(&data, queryData, id)
-	// if err != nil {
-	// 	return 0, err
-	// }
-	return id, nil
+	return nil
+
 }
 
 func (r *MoneyPostgres) GetLastTransactionSend() (int, error) {
 	query := fmt.Sprintf("SELECT id FROM %s ORDER BY id DESC LIMIT 1", transactionSendTable)
 	var id int
 	err := r.db.Get(&id, query)
-	if err != nil {
+	switch err {
+	case sql.ErrNoRows:
+		return 1, nil
+	case nil:
+		return id, nil
+	default:
 		return 0, err
 	}
-	return id, nil
+
 }
 
 func (r *MoneyPostgres) GetLastTransactionTUTO() (int, error) {

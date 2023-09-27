@@ -26,8 +26,8 @@ func (s *MoneySerice) TakeOut(userId int, amount float64) (int, error) {
 	return s.repo.TakeOut(userId, amount)
 }
 
-func (s *MoneySerice) Send(userIdFrom, userIdTo int, amount float64) (int, error) {
-	return s.repo.Send(userIdFrom, userIdTo, amount)
+func (s *MoneySerice) Send(uuid string, userIdFrom, userIdTo int, amount float64, time time.Time) error {
+	return s.repo.Send(uuid, userIdFrom, userIdTo, amount, time)
 }
 
 func (s *MoneySerice) GetLastTransactionSend() (int, error) {

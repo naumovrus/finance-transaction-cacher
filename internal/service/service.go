@@ -19,7 +19,7 @@ type Money interface {
 	CreateWallet(userId int) (int, error)
 	TopUp(userId int, amount float64) (int, error)
 	TakeOut(userId int, amount float64) (int, error)
-	Send(userIdFrom, userIdTo int, amount float64) (int, error)
+	Send(uuid string, userIdFrom, userIdTo int, amount float64, time time.Time) error
 	GetLastTransactionSend() (int, error)
 	GetLastTransactionTUTO() (int, error)
 	SetCachedDataSendPostgres(userIdFrom, userIdTo int, time time.Time) (int, error)

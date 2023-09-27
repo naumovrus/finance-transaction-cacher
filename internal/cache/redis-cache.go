@@ -110,12 +110,11 @@ func (cache *RedisCache) SetCachedData() error {
 
 		log.Printf("\nfound %d keys\n", n)
 		var value *entity.TransactionSend
-
+		// var value_tuto *entity.TransactionTUTO
 		for _, key := range keys {
 			value = cache.GetTS(key)
-			log.Printf("%v %v %v %v\n", key, value.Id, value.UserIdFrom, value.Time)
-			cache.service.Money.SetCachedDataSendPostgres(value.UserIdFrom, value.UserIdTo, value.Time)
-
+			log.Printf("key: %v uuid: %v from: %v to: %v time: %v\n", key, value.Uuid, value.UserIdFrom, value.Amount, value.Time)
+			cache.service.Money.Send(value.Uuid, value.UserIdFrom, value.UserIdTo, value.Amount, value.Time)
 		}
 
 		pipe := client.Pipeline()
