@@ -3,7 +3,7 @@
 ### Для запуска приложения:
 
 ```
-    make run
+make run
 ```
 
 Если приложение запускается впервые, необходимо применить миграции к базе данных:
@@ -14,7 +14,7 @@ make migrate
 
 ### Авторизация и аутентификация: 
     1. POST `/auth/sign-in` - POST-запрос на регистрацию в API
-        - Принимает в body JSON: {"name": "name1", "username":"username1", "password":"password"}
+        - Принимает в body JSON: {"first_name": "first_name1", "last_name": "last_name1", "username":"username1", "password":"password"}
         После этого пароль хэшируется и записывается в БД
     2. POST `auth/sign-up` - POST-запрос на авторизацию в API
         - Принимает в body JSON: { "username":"username1", "password":"password"}
